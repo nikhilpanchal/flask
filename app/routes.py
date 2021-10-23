@@ -1,10 +1,22 @@
-from flask import render_template
+from flask import render_template, flash, redirect
+from flask.helpers import url_for
 from app import app
 from app.forms import LoginForm
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
+    if form.validate_on_submit():
+        # Returns false when the browser sends a GET request to retrieve the form
+        # When submitted as a POST, will run all the validators associated with the fields
+        # on the data submitted, and if they pass will come here
+        # validators are registered in the LoginForm class
+        flash('Login request for user {}, remember_me {}'.format(
+            form.username.data, form.remember_me.data
+        ))
+        return redirect(url_for('index'))
+
     return render_template('login.html', form=form, title='Login')
 
 @app.route('/')
