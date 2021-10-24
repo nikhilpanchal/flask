@@ -9,3 +9,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 from app import routes, models
+
+# The API section is registered as a blueprint to make it portable as its own subsystem
+from app.api import bp as api_bp
+app.register_blueprint(api_bp, url_prefix='/api')

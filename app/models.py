@@ -1,4 +1,5 @@
 from datetime import datetime
+from flask.helpers import url_for
 
 from sqlalchemy.orm import backref
 from app import db
@@ -61,6 +62,32 @@ class User(db.Model):
 
         return followed.union(own).order_by(Post.timestamp.desc())
 
+
+    def to_dict(self, include_email=False):
+        data = {
+            'id': self.id,
+            'username': self.username,
+            'last_seen': datetime.now().isoformat() + 'Z',
+            # 'about_me': self.about_me,
+            'post_count': self.posts.count(),
+            'follower_count': self.followers.count(),
+            'followed_count': self.followed.count(),
+            '_links': {
+                # url_for takes in the route handler function and will return the registered url with any 
+                # prefixes
+                'self': url_for('api.get_user', id=self.id),
+                'followers': url_for('api.get_followers', id=self.id),
+                'followed': url_for('api.get_followed', id=self.id),
+            }
+        }
+        if include_email:
+            data['email'] = self.email
+        return data
+
+    def from_dict(self, data, new_user=False):
+        for field in ['username', 'email', 'about_me']:
+            if field in data:
+                setattr(self, field, data[field])
 
     def __repr__(self) -> str:
         return '<User {}>'.format(self.username)
